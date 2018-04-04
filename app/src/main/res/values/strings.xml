@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">VeoRide</string>
     <string name="title_activity_maps">Map</string>
+    <string name="alert_message">Would you like to replace the destination?</string>
+    <string name="alert_positive_message">Change</string>
+    <string name="alert_negative_message">Cancel</string>
 </resources>

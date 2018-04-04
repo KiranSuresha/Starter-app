@@ -1,6 +1,7 @@
 package com.example.android.kiran.veoride;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -34,7 +36,10 @@ public class MapsActivity extends FragmentActivity implements
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
     Marker mCurrLocationMarker;
+    private static final String LOG_TAG = MapsActivity.class.getSimpleName();
     LocationRequest mLocationRequest;
+    Marker mDestinationMarker;
+    private boolean hasDestinationMarker = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +73,40 @@ public class MapsActivity extends FragmentActivity implements
             buildGoogleApiClient();
             mMap.setMyLocationEnabled(true);
         }
+
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                if (!hasDestinationMarker) {
+                    addDestination(latLng);
+                    hasDestinationMarker = true;
+                } else {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivity.this);
+                    builder.setMessage(R.string.alert_message)
+                            .setPositiveButton(R.string.alert_positive_message, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    mDestinationMarker.remove();
+                                    hasDestinationMarker = false;
+                                }
+                            })
+                            .setNegativeButton(R.string.alert_negative_message, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Toast.makeText(MapsActivity.this, "You cancelled!", Toast.LENGTH_SHORT).show();
+                                    hasDestinationMarker = true;
+                                }
+                            }).show();
+                }
+            }
+        });
+    }
+
+    private void addDestination(LatLng latlng) {
+        mDestinationMarker = mMap.addMarker(new MarkerOptions().position(latlng).title("Destination")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
+                .draggable(false));
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(latlng));
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -184,4 +223,5 @@ public class MapsActivity extends FragmentActivity implements
             }
         }
     }
+
 }
